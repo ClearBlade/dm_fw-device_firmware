@@ -5,13 +5,13 @@
   "image_url": "https://docs.clearblade.com/v/4/static/img/default_package.png",
   "keywords": [],
   "license": "MIT",
-  "name": "ia-components",
+  "name": "ia-device-firmware",
   "private": false,
   "version": "1.0.0",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ClearBlade/components-template.git"
+    "url": "git+https://github.com:ClearBlade/dm_fw-device_firmware.git"
   },
   "scripts": {
     "build:library": "rspack build -c cb-dev-kit/rspack.config.js --config-name library",
