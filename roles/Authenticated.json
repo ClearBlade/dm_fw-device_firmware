@@ -17,23 +17,23 @@
         "CodeServices": [
             {
                 "Level": 1,
-                "Name": "{{component_prefix}}_install"
+                "Name": "dm_fw_install"
             },
             {
                 "Level": 1,
-                "Name": "{{component_prefix}}_setup"
+                "Name": "dm_fw_setup"
             },
             {
                 "Level": 1,
-                "Name": "{{component_prefix}}_teardown"
+                "Name": "dm_fw_teardown"
             },
             {
                 "Level": 1,
-                "Name": "{{component_prefix}}_uninstall"
+                "Name": "dm_fw_uninstall"
             },
             {
                 "Level": 1,
-                "Name": "{{component_prefix}}_update"
+                "Name": "dm_fw_update"
             }
         ],
         "Collections": [],
