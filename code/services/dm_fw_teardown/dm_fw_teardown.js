@@ -20,9 +20,40 @@ function dm_fw_teardown(req, resp) {
         "level": 0
       }
     ])
-}
+  }
 
-  //Remove execute permissions from editor and administrator roles for checkEdgeDeviceStatus and createOpcuaMap
+  function removePortalsFromConfig(config) {
+    if (!config.external_links) config.external_links = [];
+    var newLinks = [];
+
+    config.external_links.forEach(function(element, ndx) {
+      if (element.name !== "Software Upload" && element.name !== "Software Install") newLinks.push(element);
+    });
+
+    config.external_links = newLinks;
+  }
+
+  function getSystemInfoConfig() {
+    return new Promise(function(resolve, reject) {
+      var config = {};
+
+      SYSINFO_COLL.fetch(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"))
+      .then(function(rows) {
+        if (rows && rows.DATA.length > 0) {
+          config = JSON.parse(rows.DATA[0].configuration)
+        }
+        resolve(config);
+      })
+      .catch(function(error) {
+        reject(error);
+      });
+    })
+  }
+
+  function updateSystemInfoConfig(config) {
+    return SYSINFO_COLL.update(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"), JSON.stringify({"configuration": config}));
+  }
+
   //Remove portal permissions from editor and administrator roles
   ClearBladeAsync.Roles().read(ClearBladeAsync.Query().equalTo("name", "Administrator").or(ClearBladeAsync.Query().equalTo("name", "Editor")))
   .then(function(data) {
@@ -33,7 +64,17 @@ function dm_fw_teardown(req, resp) {
       }));
   })
   .then(function (results) {
-    console.debug(results);
+    console.debug("Retrieving configuration from system_info");
+    return getSystemInfoConfig();
+  })
+  .then(function (config) {
+    console.debug("Removing portals from configuration.external_links");
+    removePortalsFromConfig(config);
+
+    console.debug("Updating configuration in system_info");
+    return updateSystemInfoConfig(config);
+  })
+  .then(function () {
     resp.success('Success');
   })
   .catch(function (error) {
