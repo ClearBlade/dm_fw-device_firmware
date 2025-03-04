@@ -51,7 +51,7 @@ function dm_fw_teardown(req, resp) {
   }
 
   function updateSystemInfoConfig(config) {
-    return SYSINFO_COLL.update(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"), JSON.stringify({"configuration": config}));
+    return SYSINFO_COLL.update(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"), {"configuration": JSON.stringify(config)});
   }
 
   //Remove portal permissions from editor and administrator roles

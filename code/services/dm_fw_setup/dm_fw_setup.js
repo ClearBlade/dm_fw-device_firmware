@@ -69,7 +69,7 @@ function dm_fw_setup(req, resp) {
   }
 
   function updateSystemInfoConfig(config) {
-    return SYSINFO_COLL.update(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"), JSON.stringify({"configuration": config}));
+    return SYSINFO_COLL.update(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"), {"configuration": JSON.stringify(config)});
   }
 
   //Add execute permissions to editor and administrator roles for checkEdgeDeviceStatus and createOpcuaMap
@@ -91,13 +91,15 @@ function dm_fw_setup(req, resp) {
     addPortalsToConfig(config);
 
     console.debug("Updating configuration in system_info");
+    console.debug(config);
+
     return updateSystemInfoConfig(config);
   })
   .then(function () {
     resp.success('Success');
   })
   .catch(function (error) {
-    console.error("Error applying permissions to roles: " + JSON.stringify(error));
-    resp.error("Error applying permissions to roles: " + JSON.stringify(error));
+    console.error("Error setting up component: " + JSON.stringify(error));
+    resp.error("Error setting up component: " + JSON.stringify(error));
   });
 }
