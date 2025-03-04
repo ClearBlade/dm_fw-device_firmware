@@ -78,7 +78,7 @@ function dm_fw_teardown(req, resp) {
     resp.success('Success');
   })
   .catch(function (error) {
-    console.error("Error applying permissions to roles: " + JSON.stringify(error));
-    resp.error("Error applying permissions to roles: " + JSON.stringify(error));
+    console.error("Error tearing down component: " + JSON.stringify(error));
+    resp.error("Error tearing down component: " + JSON.stringify(error));
   });
 }
