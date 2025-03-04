@@ -8,6 +8,7 @@
 
 const IA_COMPONENT_NAME = "daum"
 const BUCKET_NAME = "devicemanager-files";
+const BUCKET_BOX = "sandbox";
 const BUCKET_API_PATH = "/api/v/4/bucket_sets/{systemKey}/{bucketSetName}/file/create"
 const FILE_PATH = "components/" + IA_COMPONENT_NAME + "/firmware/{device_type}/{version}";
 
@@ -135,7 +136,7 @@ function createFileInBucket(fileSpec) {
         var url = CB_PORTAL.ClearBlade.URI + uriPath;
 
         var urlbody = {
-            "box": "sandbox",
+            "box": BUCKET_BOX,
             "path": fileSpec.file_path + "/" + fileSpec.file_name,
             "contents": fileSpec.contents
         };
@@ -169,7 +170,7 @@ function createFilesRowInDB(fileSpec) {
                 "name": fileSpec.software_name,
                 "version": fileSpec.version,
                 "file_name": fileSpec.file_name,
-                "file_path": fileSpec.file_path,
+                "file_path": BUCKET_BOX + "/" + fileSpec.file_path,
                 "upload_date": fileSpec.upload_date,
                 "upload_user": fileSpec.upload_user
             },

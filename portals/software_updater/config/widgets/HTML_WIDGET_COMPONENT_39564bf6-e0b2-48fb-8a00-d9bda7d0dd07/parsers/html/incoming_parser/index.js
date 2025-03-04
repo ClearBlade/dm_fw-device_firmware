@@ -283,6 +283,7 @@ function handleSubmitBtnClick() {
         if (msgPayload.assets.length > 0) {
             //Publish the payload to SOFTWARE_UPDATE_TOPIC
             datasources["InstallSoftware"].sendData(JSON.stringify(msgPayload));
+            CB_PORTAL.Modals.open("update-requested");
         }
     }
 }

@@ -491,7 +491,9 @@
             "widgetResizeUpgrade2": true,
             "xlBreakpointUpgrade": true
         },
-        "userModalBreakpoints": {},
+        "userModalBreakpoints": {
+            "update-requested": "xxs"
+        },
         "userModalWidgetLayout": {
             "UserInfoModal": {
                 "lg": [
@@ -705,6 +707,320 @@
                         "y": 3
                     }
                 ]
+            },
+            "update-requested": {
+                "lg": [
+                    {
+                        "h": 3,
+                        "i": "modal-header-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 0
+                    },
+                    {
+                        "h": 11,
+                        "i": "modal-body-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 3
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-border-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 14
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-cancel-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 39,
+                        "x": 32,
+                        "y": 17
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-submit-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 39,
+                        "x": 71,
+                        "y": 17
+                    }
+                ],
+                "md": [
+                    {
+                        "h": 3,
+                        "i": "modal-header-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 0
+                    },
+                    {
+                        "h": 11,
+                        "i": "modal-body-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 3
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-border-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 14
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-cancel-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 39,
+                        "x": 32,
+                        "y": 17
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-submit-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 39,
+                        "x": 71,
+                        "y": 17
+                    }
+                ],
+                "sm": [
+                    {
+                        "h": 3,
+                        "i": "modal-header-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 256,
+                        "x": 0,
+                        "y": 0
+                    },
+                    {
+                        "h": 30,
+                        "i": "modal-body-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 256,
+                        "x": 0,
+                        "y": 3
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-border-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 256,
+                        "x": 0,
+                        "y": 33
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-cancel-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 33,
+                        "x": 190,
+                        "y": 36
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-submit-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 33,
+                        "x": 223,
+                        "y": 36
+                    }
+                ],
+                "xl": [
+                    {
+                        "h": 3,
+                        "i": "modal-header-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 0
+                    },
+                    {
+                        "h": 11,
+                        "i": "modal-body-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 3
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-border-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 14
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-cancel-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 39,
+                        "x": 32,
+                        "y": 17
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-submit-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 39,
+                        "x": 71,
+                        "y": 17
+                    }
+                ],
+                "xs": [
+                    {
+                        "h": 3,
+                        "i": "modal-header-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 160,
+                        "x": 0,
+                        "y": 0
+                    },
+                    {
+                        "h": 11,
+                        "i": "modal-body-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 160,
+                        "x": 0,
+                        "y": 3
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-border-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 160,
+                        "x": 0,
+                        "y": 17
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-cancel-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 33,
+                        "x": 94,
+                        "y": 36
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-submit-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 33,
+                        "x": 127,
+                        "y": 36
+                    }
+                ],
+                "xxs": [
+                    {
+                        "h": 3,
+                        "i": "modal-header-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 0
+                    },
+                    {
+                        "h": 11,
+                        "i": "modal-body-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 3
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-border-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 110,
+                        "x": 0,
+                        "y": 14
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-cancel-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 39,
+                        "x": 32,
+                        "y": 17
+                    },
+                    {
+                        "h": 3,
+                        "i": "modal-submit-update-requested",
+                        "minH": 3,
+                        "moved": false,
+                        "static": false,
+                        "w": 39,
+                        "x": 71,
+                        "y": 17
+                    }
+                ]
             }
         },
         "userModals": {
@@ -717,6 +1033,16 @@
                 ],
                 "name": "UserInfoModal",
                 "size": "md"
+            },
+            "update-requested": {
+                "clickOutsideClose": true,
+                "draggable": false,
+                "gridContainerPadding": [
+                    10,
+                    10
+                ],
+                "name": "update-requested",
+                "size": "sm"
             }
         },
         "widgets": "./config/widgets"
