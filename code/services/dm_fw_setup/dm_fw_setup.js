@@ -9,8 +9,6 @@ function dm_fw_setup(req, resp) {
   const SYSINFO_COLL = ClearBladeAsync.Collection('system_info');
 
   function applyPermissionsToRole(roleId) {
-    //TODO - Add collection permissions
-    //Add topic (publish) permissions
       return ClearBladeAsync.Role(roleId).setPermissions([
         {
           "type": "dashboard",
@@ -21,6 +19,11 @@ function dm_fw_setup(req, resp) {
           "type": "dashboard",
           "name": "software_uploader",
           "level": ClearBladeAsync.Permissions.READ
+        },
+        {
+          "type": "topics",
+          "name": "devices/software/update",
+          "level": 2
         }
       ])
   }
@@ -72,8 +75,8 @@ function dm_fw_setup(req, resp) {
     return SYSINFO_COLL.update(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"), {"configuration": JSON.stringify(config)});
   }
 
-  //Add execute permissions to editor and administrator roles for checkEdgeDeviceStatus and createOpcuaMap
   //Add portal permissions to editor and administrator roles
+  //Add topic (publish) permissions to devices/software/update
   ClearBladeAsync.Roles().read(ClearBladeAsync.Query().equalTo("name", "Administrator").or(ClearBladeAsync.Query().equalTo("name", "Editor")))
   .then(function(data) {
     return Promise.all(data

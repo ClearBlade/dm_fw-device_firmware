@@ -6,6 +6,7 @@
 
 function dm_fw_teardown(req, resp) {
   const params = req.params;
+  const SYSINFO_COLL = ClearBladeAsync.Collection('system_info');
 
   function removePermissionsFromRole(roleId) {
     return ClearBladeAsync.Role(roleId).setPermissions([
@@ -17,6 +18,11 @@ function dm_fw_teardown(req, resp) {
       {
         "type": "dashboard",
         "name": "software_uploader",
+        "level": 0
+      },
+      {
+        "type": "topics",
+        "name": "devices/software/update",
         "level": 0
       }
     ])
@@ -55,6 +61,7 @@ function dm_fw_teardown(req, resp) {
   }
 
   //Remove portal permissions from editor and administrator roles
+  //Remove topic (publish) permissions from devices/software/update
   ClearBladeAsync.Roles().read(ClearBladeAsync.Query().equalTo("name", "Administrator").or(ClearBladeAsync.Query().equalTo("name", "Editor")))
   .then(function(data) {
     return Promise.all(data
