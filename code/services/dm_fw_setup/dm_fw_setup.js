@@ -21,7 +21,7 @@ function dm_fw_setup(req, resp) {
           "level": ClearBladeAsync.Permissions.READ
         },
         {
-          "type": "topics",
+          "type": "topic",
           "name": "devices/software/update",
           "level": 2
         }

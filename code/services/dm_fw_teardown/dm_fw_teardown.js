@@ -21,7 +21,7 @@ function dm_fw_teardown(req, resp) {
         "level": 0
       },
       {
-        "type": "topics",
+        "type": "topic",
         "name": "devices/software/update",
         "level": 0
       }
