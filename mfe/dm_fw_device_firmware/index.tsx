@@ -5,14 +5,14 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
 import singleSpaReact from "single-spa-react";
-import device_firmware from "./device_firmware";
+import DeviceFirmware from "./device_firmware";
 
 function device_firmwareRoot(props) {
   return (
     <AppProviders>
       <BrowserRouter basename={getBasePath()}>
         <Subscribe>
-          <device_firmware {...props} />
+          <DeviceFirmware {...props} />
         </Subscribe>
       </BrowserRouter>
     </AppProviders>

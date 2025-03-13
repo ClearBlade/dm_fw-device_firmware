@@ -5,7 +5,7 @@ const singleSpaDefaults = require("webpack-config-single-spa-react-ts");
 module.exports = (webpackConfigEnv, argv) => {
   const defaultConfig = singleSpaDefaults({
     orgName: "cb",
-    projectName: "ai-microfrontends",
+    projectName: "dm_fw-Device_Firmware",
     webpackConfigEnv,
     argv,
   });
