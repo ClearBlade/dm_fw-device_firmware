@@ -1,39 +1,18 @@
 import React, { useState } from 'react';
-import { Box, Tabs, Tab, Typography } from '@mui/material';
+import { Box, Tabs, Tab } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import UploadSoftware from './components/UploadSoftware';
 import UpdateSoftware from './components/UpdateSoftware';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`firmware-tabpanel-${index}`}
-      aria-labelledby={`firmware-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
+import { TabPanel } from './components/TabPanel';
 
 const StyledTabs = styled(Tabs)({
   borderBottom: '1px solid #e8e8e8',
   '& .MuiTabs-indicator': {
     backgroundColor: '#1890ff',
+  },
+  '& .MuiTabs-flexContainer': {
+    gap: '32px',
+    padding: '0 16px',
   },
 });
 
@@ -41,7 +20,6 @@ const StyledTab = styled(Tab)({
   textTransform: 'none',
   fontWeight: 600,
   fontSize: '16px',
-  marginRight: '32px',
   '&.Mui-selected': {
     color: '#1890ff',
   },

@@ -9,6 +9,9 @@ function dm_fw_setup(req, resp) {
   const SYSINFO_COLL = ClearBladeAsync.Collection('system_info');
 
   function applyPermissionsToRole(roleId) {
+
+//TODO - Add collection permissions
+
       return ClearBladeAsync.Role(roleId).setPermissions([
         {
           "type": "dashboard",

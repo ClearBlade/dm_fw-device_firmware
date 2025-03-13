@@ -13,29 +13,13 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useAssetTypes } from '../api/useAssetTypes';
+import { useUploadSoftware } from '../api/useUploadSoftware';
+import { FileSpec } from '../types';
+import { useSnackbar } from 'notistack'
 
 const IA_COMPONENT_NAME = "daum";
-const BUCKET_NAME = "devicemanager-files";
-const BUCKET_BOX = "sandbox";
-const BUCKET_API_PATH = "/api/v/4/bucket_sets/{systemKey}/{bucketSetName}/file/create";
 const FILE_PATH = `components/${IA_COMPONENT_NAME}/firmware/{device_type}/{version}`;
-
-interface DeviceType {
-  id: string;
-  label: string;
-  device_type: string;
-}
-
-interface FileSpec {
-  device_type: string;
-  software_name: string;
-  version: string;
-  file_name: string;
-  file_path: string;
-  upload_date: string;
-  upload_user: string;
-  contents: string;
-}
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -43,14 +27,18 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   margin: '0 auto',
 }));
 
-// TODOs that need to be completed:
-// Replace YOUR_SYSTEM_KEY with the actual system key
-// Replace YOUR_API_URL with the actual API URL
-// Replace YOUR_AUTH_TOKEN with the actual auth token mechanism
-// Replace the mock device types data with actual API call
-// Implement the actual database record creation in createFilesRowInDB
-// Would you like me to help with implementing any of these TODOs or make any adjustments to the current implementation?
-
+const StyledMenuItem = styled(MenuItem)({
+  '&.MuiMenuItem-root': {
+    display: 'block',
+    width: '100%',
+    margin: 0,
+    padding: '8px 16px',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+    '&:last-child': {
+      borderBottom: 'none'
+    }
+  }
+});
 
 export default function UploadSoftware() {
   // Form state
@@ -60,21 +48,26 @@ export default function UploadSoftware() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   // Data state
-  const [deviceTypes, setDeviceTypes] = useState<DeviceType[]>([]);
+  const { data: assetTypes = [], isLoading: isLoadingAssetTypes, error: assetTypesError } = useAssetTypes();
+  const uploadSoftwareMutation = useUploadSoftware();
   
   // UI state
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ [key: string]: string }>({});
   const [success, setSuccess] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
-  // Load device types
+  // Display hook errors in snackbars
   useEffect(() => {
-    // TODO: Replace with actual API call
-    setDeviceTypes([
-      { id: '1', label: 'Temperature Sensor', device_type: 'temp_sensor' },
-      { id: '2', label: 'Pressure Sensor', device_type: 'pressure_sensor' },
-    ]);
-  }, []);
+    if (assetTypesError) {
+      enqueueSnackbar('Failed to load device types. Please try again.', { variant: 'error' });
+    }
+  }, [assetTypesError, enqueueSnackbar]);
+
+  useEffect(() => {
+    if (uploadSoftwareMutation.error) {
+      enqueueSnackbar('Failed to upload file. Please try again.', { variant: 'error' });
+    }
+  }, [uploadSoftwareMutation.error, enqueueSnackbar]);
 
   const validateDeviceType = () => {
     if (!deviceType) {
@@ -143,41 +136,6 @@ export default function UploadSoftware() {
     });
   };
 
-  const createFileInBucket = async (fileSpec: FileSpec) => {
-    const uriPath = BUCKET_API_PATH
-      .replace("{systemKey}", "YOUR_SYSTEM_KEY") // TODO: Replace with actual system key
-      .replace("{bucketSetName}", BUCKET_NAME);
-
-    const url = "YOUR_API_URL" + uriPath; // TODO: Replace with actual API URL
-
-    const urlbody = {
-      box: BUCKET_BOX,
-      path: fileSpec.file_path + "/" + fileSpec.file_name,
-      contents: fileSpec.contents
-    };
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "ClearBlade-UserToken": "YOUR_AUTH_TOKEN", // TODO: Replace with actual auth token
-      },
-      body: JSON.stringify(urlbody)
-    });
-
-    if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status}`);
-    }
-
-    return response.json();
-  };
-
-  const createFilesRowInDB = async (fileSpec: FileSpec) => {
-    // TODO: Replace with actual API call
-    console.log('Creating file record:', fileSpec);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  };
-
   const handleSubmit = async () => {
     setError({});
     setSuccess(false);
@@ -190,8 +148,6 @@ export default function UploadSoftware() {
 
     if (!isValid || !selectedFile) return;
 
-    setLoading(true);
-
     try {
       const fileSpec: FileSpec = {
         device_type: deviceType,
@@ -202,18 +158,15 @@ export default function UploadSoftware() {
           .replace("{device_type}", deviceType)
           .replace("{version}", version),
         upload_date: new Date().toISOString(),
-        upload_user: "current_user", // TODO: Replace with actual user
+        upload_user: "system", // Using system as the user since we don't have user info
         contents: ""
       };
 
       // Read file contents
       fileSpec.contents = await readFile(selectedFile);
 
-      // Upload file to bucket
-      await createFileInBucket(fileSpec);
-
-      // Create database record
-      await createFilesRowInDB(fileSpec);
+      // Upload file and create database record
+      await uploadSoftwareMutation.mutateAsync(fileSpec);
 
       // Reset form
       setDeviceType('');
@@ -221,13 +174,13 @@ export default function UploadSoftware() {
       setVersion('');
       setSelectedFile(null);
       setSuccess(true);
+      enqueueSnackbar('File uploaded successfully!', { variant: 'success' });
     } catch (err) {
       setError(prev => ({
         ...prev,
         submit: 'Failed to upload file. Please try again.'
       }));
-    } finally {
-      setLoading(false);
+      enqueueSnackbar('Failed to upload file. Please try again.', { variant: 'error' });
     }
   };
 
@@ -249,18 +202,31 @@ export default function UploadSoftware() {
         </Alert>
       )}
 
-      <FormControl fullWidth error={!!error.deviceType} sx={{ mb: 3 }}>
+      <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>Device Type</InputLabel>
         <Select
           value={deviceType}
           onChange={(e) => setDeviceType(e.target.value)}
           label="Device Type"
+          disabled={isLoadingAssetTypes}
+          error={!!error.deviceType}
+          MenuProps={{
+            PaperProps: {
+              style: {
+                maxHeight: 300
+              }
+            }
+          }}
         >
-          {deviceTypes.map(type => (
-            <MenuItem key={type.id} value={type.device_type}>
-              {type.label}
-            </MenuItem>
-          ))}
+          {isLoadingAssetTypes ? (
+            <MenuItem disabled>Loading device types...</MenuItem>
+          ) : (
+            assetTypes.map(type => (
+              <StyledMenuItem key={type.id} value={type.device_type} divider>
+                {type.label || type.device_type}
+              </StyledMenuItem>
+            ))
+          )}
         </Select>
         {error.deviceType && (
           <Typography color="error" variant="caption">
@@ -269,42 +235,53 @@ export default function UploadSoftware() {
         )}
       </FormControl>
 
-      <TextField
-        fullWidth
-        label="Software Name"
-        value={softwareName}
-        onChange={(e) => setSoftwareName(e.target.value)}
-        error={!!error.softwareName}
-        helperText={error.softwareName}
-        sx={{ mb: 3 }}
-      />
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <TextField
+          label="Software Name"
+          value={softwareName}
+          onChange={(e) => setSoftwareName(e.target.value)}
+          error={!!error.softwareName}
+          helperText={error.softwareName}
+        />
+      </FormControl>
 
-      <TextField
-        fullWidth
-        label="Version Number (semver format)"
-        value={version}
-        onChange={(e) => setVersion(e.target.value)}
-        error={!!error.version}
-        helperText={error.version}
-        placeholder="e.g., 1.0.0"
-        sx={{ mb: 3 }}
-      />
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <TextField
+          label="Version"
+          value={version}
+          onChange={(e) => setVersion(e.target.value)}
+          error={!!error.version}
+          helperText={error.version}
+          placeholder="1.0.0"
+        />
+      </FormControl>
 
-      <Box sx={{ mb: 3 }}>
+      <FormControl fullWidth sx={{ mb: 2 }}>
         <input
-          accept=".bin,.hex,.fw"
-          style={{ display: 'none' }}
-          id="file-upload"
           type="file"
           onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+          style={{ display: 'none' }}
+          id="software-file-input"
         />
-        <label htmlFor="file-upload">
+        <label htmlFor="software-file-input">
           <Button
-            variant="outlined"
+            variant="contained"
             component="span"
             fullWidth
+            color={error.file ? 'error' : 'primary'}
+            sx={{
+              backgroundColor: 'transparent',
+              border: '1px solid',
+              borderColor: error.file ? 'error.main' : 'primary.main',
+              color: error.file ? 'error.main' : 'primary.main',
+              '&:hover': {
+                backgroundColor: 'transparent',
+                borderColor: error.file ? 'error.dark' : 'primary.dark',
+                color: error.file ? 'error.dark' : 'primary.dark',
+              }
+            }}
           >
-            {selectedFile ? selectedFile.name : 'Choose File'}
+            {selectedFile ? selectedFile.name : 'Select File'}
           </Button>
         </label>
         {error.file && (
@@ -312,15 +289,15 @@ export default function UploadSoftware() {
             {error.file}
           </Typography>
         )}
-      </Box>
+      </FormControl>
 
       <Button
         variant="contained"
         onClick={handleSubmit}
-        disabled={loading}
+        disabled={uploadSoftwareMutation.isLoading}
         fullWidth
       >
-        {loading ? (
+        {uploadSoftwareMutation.isLoading ? (
           <>
             <CircularProgress size={24} sx={{ mr: 1 }} color="inherit" />
             Uploading...

@@ -3,14 +3,7 @@ import {
   Box,
   Paper,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Button,
-  Chip,
   CircularProgress,
   Alert,
   Select,
@@ -23,113 +16,117 @@ import {
   FormControlLabel,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useAssets } from '../api/useAssets';
+import { useAssetTypes } from '../api/useAssetTypes';
+import { useSoftwareVersions } from '../api/useSoftwareVersions';
+import { useSoftwareNames } from '../api/useSoftwareNames';
+import { useInstallations } from '../api/useInstallations';
+import { useScheduledUpdates } from '../api/useScheduledUpdates';
+import { useScheduleUpdate } from '../api/useScheduleUpdate';
+import { InstalledVersionsTable } from './InstalledVersionsTable';
+import { ScheduledUpdatesTable } from './ScheduledUpdatesTable';
+import { useSnackbar } from 'notistack';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  fontWeight: 'bold',
-  backgroundColor: theme.palette.grey[50],
-}));
-
-interface DeviceType {
-  id: string;
-  label: string;
-  device_type: string;
-}
-
-interface Software {
-  id: string;
-  name: string;
-  version: string;
-  filename: string;
-}
-
-interface Device {
-  id: string;
-  label: string;
-  type: string;
-}
-
-interface Installation {
-  asset_id: string;
-  installation_date: string;
-  user_id: string;
-  version: string;
-  status: 'pending' | 'completed' | 'failed';
-  description?: string;
-}
-
-// TODOs that need to be completed:
-// The component is now ready to be integrated with your backend APIs. You'll need to:
-// Replace the mock data in the useEffect with actual API calls
-// Implement the actual update submission in handleSubmit
-// Add any additional error handling specific to your backend
-// Add any specific business logic required for your use case
-// Would you like me to help with any of these integrations or make any adjustments to the current implementation?
+const StyledMenuItem = styled(MenuItem)({
+  '&.MuiMenuItem-root': {
+    display: 'block',
+    width: '100%',
+    margin: 0,
+    padding: '8px 16px',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+    '&:last-child': {
+      borderBottom: 'none'
+    }
+  }
+});
 
 export default function UpdateSoftware() {
   // State for form fields
+  const [selectedAssetType, setSelectedAssetType] = useState('');
   const [selectedDeviceType, setSelectedDeviceType] = useState('');
   const [selectedSoftware, setSelectedSoftware] = useState('');
   const [selectedVersion, setSelectedVersion] = useState('');
   const [installDate, setInstallDate] = useState('');
   const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
   
-  // State for data
-  const [deviceTypes, setDeviceTypes] = useState<DeviceType[]>([]);
-  const [software, setSoftware] = useState<Software[]>([]);
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [installations, setInstallations] = useState<Installation[]>([]);
-  const [scheduledInstalls, setScheduledInstalls] = useState<Installation[]>([]);
+  // Fetch data using our custom hooks
+  const { data: assets = [], isLoading: isLoadingAssets, error: assetsError } = useAssets(selectedAssetType);
+  const { data: assetTypes = [], isLoading: isLoadingAssetTypes, error: assetTypesError } = useAssetTypes();
+  const { data: softwareNames = [], isLoading: isLoadingSoftwareNames, error: softwareNamesError } = useSoftwareNames(selectedDeviceType);
+  const { data: softwareVersions = [], isLoading: isLoadingSoftware, error: softwareError } = useSoftwareVersions(selectedDeviceType, selectedSoftware);
+  const { data: installations = [], isLoading: isLoadingInstallations, error: installationsError } = useInstallations({
+    enabled: !!selectedDeviceType && !!selectedSoftware,
+    assetType: selectedAssetType,
+    softwareName: selectedSoftware
+  });
+  const { data: scheduledUpdates = [], isLoading: isLoadingScheduled, error: scheduledError } = useScheduledUpdates({
+    enabled: !!selectedDeviceType && !!selectedSoftware,
+    assetType: selectedAssetType,
+    softwareName: selectedSoftware
+  });
+  const scheduleUpdateMutation = useScheduleUpdate();
   
   // State for UI
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { enqueueSnackbar } = useSnackbar();
 
-  // Mock data loading - replace with actual API calls
+  // Display hook errors in snackbars
   useEffect(() => {
-    // Load device types
-    setDeviceTypes([
-      { id: '1', label: 'Temperature Sensor', device_type: 'temp_sensor' },
-      { id: '2', label: 'Pressure Sensor', device_type: 'pressure_sensor' },
-    ]);
+    if (assetsError) {
+      enqueueSnackbar('Failed to load assets. Please try again.', { variant: 'error' });
+    }
+  }, [assetsError, enqueueSnackbar]);
 
-    // Load software
-    setSoftware([
-      { id: '1', name: 'Firmware', version: '2.1.0', filename: 'firmware_2.1.0.bin' },
-      { id: '2', name: 'Firmware', version: '2.0.0', filename: 'firmware_2.0.0.bin' },
-    ]);
+  useEffect(() => {
+    if (assetTypesError) {
+      enqueueSnackbar('Failed to load device types. Please try again.', { variant: 'error' });
+    }
+  }, [assetTypesError, enqueueSnackbar]);
 
-    // Load devices
-    setDevices([
-      { id: '1', label: 'Sensor 001', type: 'temp_sensor' },
-      { id: '2', label: 'Sensor 002', type: 'pressure_sensor' },
-    ]);
+  useEffect(() => {
+    if (softwareNamesError) {
+      enqueueSnackbar('Failed to load software names. Please try again.', { variant: 'error' });
+    }
+  }, [softwareNamesError, enqueueSnackbar]);
 
-    // Load installations
-    setInstallations([
-      {
-        asset_id: '1',
-        installation_date: '2024-03-01',
-        user_id: 'admin',
-        version: '2.0.0',
-        status: 'completed'
-      },
-    ]);
+  useEffect(() => {
+    if (softwareError) {
+      enqueueSnackbar('Failed to load software versions. Please try again.', { variant: 'error' });
+    }
+  }, [softwareError, enqueueSnackbar]);
 
-    // Load scheduled installations
-    setScheduledInstalls([
-      {
-        asset_id: '2',
-        installation_date: '2024-03-20',
-        user_id: 'admin',
-        version: '2.1.0',
-        status: 'pending',
-        description: 'Scheduled update'
-      },
-    ]);
-  }, []);
+  useEffect(() => {
+    if (installationsError) {
+      enqueueSnackbar('Failed to load installations. Please try again.', { variant: 'error' });
+    }
+  }, [installationsError, enqueueSnackbar]);
+
+  useEffect(() => {
+    if (scheduledError) {
+      enqueueSnackbar('Failed to load scheduled updates. Please try again.', { variant: 'error' });
+    }
+  }, [scheduledError, enqueueSnackbar]);
+
+  useEffect(() => {
+    if (scheduleUpdateMutation.error) {
+      enqueueSnackbar('Failed to schedule updates. Please try again.', { variant: 'error' });
+    }
+  }, [scheduleUpdateMutation.error, enqueueSnackbar]);
+
+  // Reset software and version selections when device type changes
+  useEffect(() => {
+    setSelectedSoftware('');
+    setSelectedVersion('');
+  }, [selectedDeviceType]);
+
+  // Reset version selection when software changes
+  useEffect(() => {
+    setSelectedVersion('');
+  }, [selectedSoftware]);
 
   const handleDeviceTypeChange = (event: any) => {
     setSelectedDeviceType(event.target.value);
+    setSelectedAssetType(assetTypes.find(assetType => assetType.device_type === event.target.value)?.id || '');
     setSelectedDevices([]);
   };
 
@@ -152,43 +149,40 @@ export default function UpdateSoftware() {
   const handleSelectAllDevices = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedDevices(
       event.target.checked
-        ? devices.filter(d => d.type === selectedDeviceType).map(d => d.id)
+        ? assetTypes
+            .filter(d => d.device_type === selectedDeviceType)
+            .map(d => d.id || '')
+            .filter(Boolean)
         : []
     );
   };
 
   const handleSubmit = async () => {
     if (!selectedDeviceType || !selectedSoftware || !selectedVersion || !installDate || selectedDevices.length === 0) {
-      setError('Please fill in all required fields and select at least one device.');
+      const errorMessage = 'Please fill in all required fields and select at least one device.';
+      setError(errorMessage);
+      enqueueSnackbar(errorMessage, { variant: 'error' });
       return;
     }
 
-    setLoading(true);
     setError(null);
 
     try {
-      // TODO: Implement actual update submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock success - in real implementation, this would be handled by the backend
-      const newScheduledInstalls = selectedDevices.map(deviceId => ({
-        asset_id: deviceId,
-        installation_date: installDate,
-        user_id: 'current_user',
+      await scheduleUpdateMutation.mutateAsync({
+        deviceIds: selectedDevices,
         version: selectedVersion,
-        status: 'pending' as const,
-        description: 'Update scheduled'
-      }));
-
-      setScheduledInstalls(prev => [...prev, ...newScheduledInstalls]);
+        installDate,
+        softwareName: selectedSoftware,
+      });
       
       // Reset form
       setSelectedDevices([]);
       setInstallDate('');
+      enqueueSnackbar('Updates scheduled successfully!', { variant: 'success' });
     } catch (error) {
-      setError('Failed to schedule updates. Please try again.');
-    } finally {
-      setLoading(false);
+      const errorMessage = 'Failed to schedule updates. Please try again.';
+      setError(errorMessage);
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     }
   };
 
@@ -200,6 +194,13 @@ export default function UpdateSoftware() {
           <Typography variant="h6" gutterBottom>
             Schedule Software Update
           </Typography>
+
+          {(assetTypesError || softwareNamesError || softwareError || installationsError || scheduledError) && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {assetTypesError?.message || softwareNamesError?.message || softwareError?.message || 
+               installationsError?.message || scheduledError?.message || 'Failed to load data. Please try again later.'}
+            </Alert>
+          )}
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -213,12 +214,24 @@ export default function UpdateSoftware() {
               value={selectedDeviceType}
               onChange={handleDeviceTypeChange}
               label="Device Type"
+              disabled={isLoadingAssetTypes}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 300
+                  }
+                }
+              }}
             >
-              {deviceTypes.map(type => (
-                <MenuItem key={type.id} value={type.device_type}>
-                  {type.label}
-                </MenuItem>
-              ))}
+              {isLoadingAssetTypes ? (
+                <MenuItem disabled>Loading device types...</MenuItem>
+              ) : (
+                assetTypes.map(type => (
+                  <StyledMenuItem key={type.id} value={type.device_type} divider>
+                    {type.label || type.id}
+                  </StyledMenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
 
@@ -228,12 +241,24 @@ export default function UpdateSoftware() {
               value={selectedSoftware}
               onChange={handleSoftwareChange}
               label="Software"
+              disabled={isLoadingSoftwareNames || !selectedDeviceType}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 300
+                  }
+                }
+              }}
             >
-              {[...new Set(software.map(s => s.name))].map(name => (
-                <MenuItem key={name} value={name}>
-                  {name}
-                </MenuItem>
-              ))}
+              {isLoadingSoftwareNames ? (
+                <MenuItem disabled>Loading software names...</MenuItem>
+              ) : (
+                softwareNames.map(sw => (
+                  <StyledMenuItem key={sw.name} value={sw.name} divider>
+                    {sw.name}
+                  </StyledMenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
 
@@ -243,14 +268,24 @@ export default function UpdateSoftware() {
               value={selectedVersion}
               onChange={handleVersionChange}
               label="Version"
+              disabled={isLoadingSoftware || !selectedSoftware}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 300
+                  }
+                }
+              }}
             >
-              {software
-                .filter(s => s.name === selectedSoftware)
-                .map(s => (
-                  <MenuItem key={s.version} value={s.version}>
+              {isLoadingSoftware ? (
+                <MenuItem disabled>Loading versions...</MenuItem>
+              ) : (
+                softwareVersions.map(s => (
+                  <StyledMenuItem key={s.version} value={s.version} divider>
                     {s.version}
-                  </MenuItem>
-                ))}
+                  </StyledMenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
 
@@ -260,11 +295,13 @@ export default function UpdateSoftware() {
             type="datetime-local"
             value={installDate}
             onChange={(e) => setInstallDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
             sx={{ mb: 2 }}
+            InputLabelProps={{
+              shrink: true,
+            }}
           />
 
-          {selectedDeviceType && (
+          {selectedDeviceType && assets.length > 0 && (
             <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
               <Typography variant="subtitle1" gutterBottom>
                 Select Devices
@@ -273,7 +310,10 @@ export default function UpdateSoftware() {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={selectedDevices.length === devices.filter(d => d.type === selectedDeviceType).length}
+                    checked={
+                      selectedDevices.length === 
+                      assets.filter(d => d.type === selectedAssetType).length
+                    }
                     onChange={handleSelectAllDevices}
                   />
                 }
@@ -281,18 +321,18 @@ export default function UpdateSoftware() {
               />
 
               <FormGroup>
-                {devices
-                  .filter(device => device.type === selectedDeviceType)
-                  .map(device => (
+                {assets
+                  .filter(asset => asset.type === selectedAssetType)
+                  .map(asset => (
                     <FormControlLabel
-                      key={device.id}
+                      key={asset.id}
                       control={
                         <Checkbox
-                          checked={selectedDevices.includes(device.id)}
-                          onChange={() => handleDeviceSelection(device.id)}
+                          checked={selectedDevices.includes(asset.id || '')}
+                          onChange={() => handleDeviceSelection(asset.id || '')}
                         />
                       }
-                      label={device.label}
+                      label={asset.label || asset.id}
                     />
                   ))}
               </FormGroup>
@@ -302,10 +342,10 @@ export default function UpdateSoftware() {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={scheduleUpdateMutation.isLoading}
             fullWidth
           >
-            {loading ? (
+            {scheduleUpdateMutation.isLoading ? (
               <>
                 <CircularProgress size={24} sx={{ mr: 1 }} color="inherit" />
                 Scheduling Updates...
@@ -319,92 +359,20 @@ export default function UpdateSoftware() {
 
       {/* Right Column - Current Status */}
       <Box sx={{ flex: 1 }}>
-        {/* Currently Installed Versions */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Currently Installed Versions
-          </Typography>
-          
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Device</StyledTableCell>
-                  <StyledTableCell>Install Date</StyledTableCell>
-                  <StyledTableCell>User</StyledTableCell>
-                  <StyledTableCell>Version</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {installations.map((install, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      {devices.find(d => d.id === install.asset_id)?.label}
-                    </TableCell>
-                    <TableCell>{new Date(install.installation_date).toLocaleString()}</TableCell>
-                    <TableCell>{install.user_id}</TableCell>
-                    <TableCell>{install.version}</TableCell>
-                  </TableRow>
-                ))}
-                {installations.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">
-                      No installations found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-
-        {/* Scheduled Updates */}
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Scheduled Updates
-          </Typography>
-          
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Device</StyledTableCell>
-                  <StyledTableCell>Scheduled For</StyledTableCell>
-                  <StyledTableCell>Status</StyledTableCell>
-                  <StyledTableCell>Description</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {scheduledInstalls.map((install, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      {devices.find(d => d.id === install.asset_id)?.label}
-                    </TableCell>
-                    <TableCell>{new Date(install.installation_date).toLocaleString()}</TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={install.status.toUpperCase()}
-                        color={
-                          install.status === 'completed' ? 'success' :
-                          install.status === 'failed' ? 'error' : 'primary'
-                        }
-                      />
-                    </TableCell>
-                    <TableCell>{install.description}</TableCell>
-                  </TableRow>
-                ))}
-                {scheduledInstalls.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">
-                      No scheduled updates
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+        {isLoadingInstallations || isLoadingScheduled ? (
+          <CircularProgress />
+        ) : (
+          <>
+            <InstalledVersionsTable 
+              installations={installations}
+              assets={assets}
+            />
+            <ScheduledUpdatesTable
+              scheduledInstalls={scheduledUpdates}
+              assets={assets}
+            />
+          </>
+        )}
       </Box>
     </Box>
   );

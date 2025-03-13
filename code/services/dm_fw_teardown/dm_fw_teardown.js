@@ -9,6 +9,7 @@ function dm_fw_teardown(req, resp) {
   const SYSINFO_COLL = ClearBladeAsync.Collection('system_info');
 
   function removePermissionsFromRole(roleId) {
+
     return ClearBladeAsync.Role(roleId).setPermissions([
       {
         "type": "dashboard",
