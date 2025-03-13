@@ -22,7 +22,7 @@ import { useSoftwareVersions } from '../api/useSoftwareVersions';
 import { useSoftwareNames } from '../api/useSoftwareNames';
 import { useInstallations } from '../api/useInstallations';
 import { useScheduledUpdates } from '../api/useScheduledUpdates';
-import { useScheduleUpdate } from '../api/useScheduleUpdate';
+import { useMqttPublish } from '../api/useMqttPublish';
 import { InstalledVersionsTable } from './InstalledVersionsTable';
 import { ScheduledUpdatesTable } from './ScheduledUpdatesTable';
 import { useSnackbar } from 'notistack';
@@ -64,7 +64,7 @@ export default function UpdateSoftware() {
     assetType: selectedAssetType,
     softwareName: selectedSoftware
   });
-  const scheduleUpdateMutation = useScheduleUpdate();
+  const mqttPublishMutation = useMqttPublish();
   
   // State for UI
   const [error, setError] = useState<string | null>(null);
@@ -108,10 +108,10 @@ export default function UpdateSoftware() {
   }, [scheduledError, enqueueSnackbar]);
 
   useEffect(() => {
-    if (scheduleUpdateMutation.error) {
-      enqueueSnackbar('Failed to schedule updates. Please try again.', { variant: 'error' });
+    if (mqttPublishMutation.error) {
+      enqueueSnackbar('Failed to publish software update message. Please try again.', { variant: 'error' });
     }
-  }, [scheduleUpdateMutation.error, enqueueSnackbar]);
+  }, [mqttPublishMutation.error, enqueueSnackbar]);
 
   // Reset software and version selections when device type changes
   useEffect(() => {
@@ -168,19 +168,18 @@ export default function UpdateSoftware() {
     setError(null);
 
     try {
-      await scheduleUpdateMutation.mutateAsync({
-        deviceIds: selectedDevices,
-        version: selectedVersion,
-        installDate,
+      await mqttPublishMutation.mutateAsync({
         softwareName: selectedSoftware,
+        version: selectedVersion,
+        assets: selectedDevices
       });
       
       // Reset form
       setSelectedDevices([]);
       setInstallDate('');
-      enqueueSnackbar('Updates scheduled successfully!', { variant: 'success' });
+      enqueueSnackbar('Software update message published successfully!', { variant: 'success' });
     } catch (error) {
-      const errorMessage = 'Failed to schedule updates. Please try again.';
+      const errorMessage = 'Failed to publish software update message. Please try again.';
       setError(errorMessage);
       enqueueSnackbar(errorMessage, { variant: 'error' });
     }
@@ -342,16 +341,16 @@ export default function UpdateSoftware() {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={scheduleUpdateMutation.isLoading}
+            disabled={mqttPublishMutation.isLoading}
             fullWidth
           >
-            {scheduleUpdateMutation.isLoading ? (
+            {mqttPublishMutation.isLoading ? (
               <>
                 <CircularProgress size={24} sx={{ mr: 1 }} color="inherit" />
-                Scheduling Updates...
+                Publishing Update Message...
               </>
             ) : (
-              'Schedule Updates'
+              'Publish Update Message'
             )}
           </Button>
         </Paper>

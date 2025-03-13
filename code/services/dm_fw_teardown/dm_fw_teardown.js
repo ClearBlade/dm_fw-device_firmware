@@ -6,21 +6,10 @@
 
 function dm_fw_teardown(req, resp) {
   const params = req.params;
-  const SYSINFO_COLL = ClearBladeAsync.Collection('system_info');
+  const DASHBOARD_COLL = ClearBladeAsync.Collection('dashboards');
 
   function removePermissionsFromRole(roleId) {
-
     return ClearBladeAsync.Role(roleId).setPermissions([
-      {
-        "type": "dashboard",
-        "name": "software_updater",
-        "level": 0
-      },
-      {
-        "type": "dashboard",
-        "name": "software_uploader",
-        "level": 0
-      },
       {
         "type": "topic",
         "name": "devices/software/update",
@@ -29,39 +18,44 @@ function dm_fw_teardown(req, resp) {
     ])
   }
 
-  function removePortalsFromConfig(config) {
-    if (!config.external_links) config.external_links = [];
-    var newLinks = [];
+  function retrieveDashboard() {
+    return DASHBOARD_COLL.fetch(ClearBladeAsync.Query().equalTo("label", "Device Software Management"));
+  };
 
-    config.external_links.forEach(function(element, ndx) {
-      if (element.name !== "Software Upload" && element.name !== "Software Install") newLinks.push(element);
-    });
-
-    config.external_links = newLinks;
-  }
-
-  function getSystemInfoConfig() {
+  function removeDashboard() {
     return new Promise(function(resolve, reject) {
-      var config = {};
 
-      SYSINFO_COLL.fetch(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"))
+      retrieveDashboard()
       .then(function(rows) {
-        if (rows && rows.DATA.length > 0) {
-          config = JSON.parse(rows.DATA[0].configuration)
+        if (rows.DATA.length > 0) {
+          const dashboard = rows.DATA[0];
+          const dashboardRequest = {
+            "name": "dashboards.delete",
+            "body": {
+              "id": dashboard.id
+            }
+          };
+          const mfeRequest = {
+            "name": "microfrontends.delete",
+            "body": {
+              "id": dashboard.microfrontend_id
+            }
+          };
+
+          resolve(Promise.all([
+            ClearBladeAsync.Code().execute("deleteTableItems", dashboardRequest, false),
+            ClearBladeAsync.Code().execute("deleteTableItems", mfeRequest, false)
+          ]));
         }
-        resolve(config);
-      })
+        resolve();
+      }) 
       .catch(function(error) {
+        console.error("Error removing dashboard: " + JSON.stringify(error));
         reject(error);
       });
-    })
+    });
   }
 
-  function updateSystemInfoConfig(config) {
-    return SYSINFO_COLL.update(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"), {"configuration": JSON.stringify(config)});
-  }
-
-  //Remove portal permissions from editor and administrator roles
   //Remove topic (publish) permissions from devices/software/update
   ClearBladeAsync.Roles().read(ClearBladeAsync.Query().equalTo("name", "Administrator").or(ClearBladeAsync.Query().equalTo("name", "Editor")))
   .then(function(data) {
@@ -71,18 +65,12 @@ function dm_fw_teardown(req, resp) {
         return removePermissionsFromRole(role.role_id);
       }));
   })
-  .then(function (results) {
-    console.debug("Retrieving configuration from system_info");
-    return getSystemInfoConfig();
-  })
-  .then(function (config) {
-    console.debug("Removing portals from configuration.external_links");
-    removePortalsFromConfig(config);
-
-    console.debug("Updating configuration in system_info");
-    return updateSystemInfoConfig(config);
-  })
   .then(function () {
+    console.debug("Removing dashboard row");
+    return removeDashboard();
+  })
+  .then(function (results) {
+    console.debug(results);
     resp.success('Success');
   })
   .catch(function (error) {

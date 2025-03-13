@@ -6,23 +6,11 @@
 
 function dm_fw_setup(req, resp) {
   const params = req.params;
-  const SYSINFO_COLL = ClearBladeAsync.Collection('system_info');
 
   function applyPermissionsToRole(roleId) {
 
-//TODO - Add collection permissions
-
+      //Add topic permissions to devices/software/update
       return ClearBladeAsync.Role(roleId).setPermissions([
-        {
-          "type": "dashboard",
-          "name": "software_updater",
-          "level": ClearBladeAsync.Permissions.READ
-        },
-        {
-          "type": "dashboard",
-          "name": "software_uploader",
-          "level": ClearBladeAsync.Permissions.READ
-        },
         {
           "type": "topic",
           "name": "devices/software/update",
@@ -31,54 +19,74 @@ function dm_fw_setup(req, resp) {
       ])
   }
 
-  function getSystemInfoConfig() {
-    return new Promise(function(resolve, reject) {
-      var config = {};
-
-      SYSINFO_COLL.fetch(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"))
-      .then(function(rows) {
-        if (rows && rows.DATA.length > 0) {
-          config = JSON.parse(rows.DATA[0].configuration)
-        }
-        resolve(config);
-      })
-      .catch(function(error) {
-        reject(error);
-      });
-    })
-  }
-  
-  function addPortalsToConfig(config) {
-    var uploadExists = false;
-    var installExists = false;
-
-    if (!config.external_links) config.external_links = [];
-
-    config.external_links.forEach(function(element) {
-      if (element.name === "Software Upload") uploadExists = true;
-      if (element.name === "Software Install") installExists = true;
-    });
-
-    if (!uploadExists) {
-      config.external_links.push({
-        "name": "Software Upload",
-        "url": "https://demo.clearblade.com/portal/?systemKey=AAAAAAAAAAAAAAAAAAAAAJ57Q_x8iWoS4tFYV4x3_w2gverY9aiEvOv1bfAP4A==&systemSecret=AAAAAAAAAAAAAAAAAAAAAGhvgP7pAQ==&name=software_uploader&allowAnon=true"
-      });
+  function createDashboard() {
+    var mfeRequest = {
+      "name":"microfrontends.create",
+      "body":{
+        "type":"dashboard",
+        "id": newUUID(),
+        "url":"http://localhost:8080/dm_fw_device_firmware.js",
+        "config":null
+      }
     }
 
-    if (!installExists) {
-      config.external_links.push({
-        "name": "Software Install",
-        "url": "https://demo.clearblade.com/portal/?systemKey=AAAAAAAAAAAAAAAAAAAAAJ57Q_x8iWoS4tFYV4x3_w2gverY9aiEvOv1bfAP4A==&systemSecret=AAAAAAAAAAAAAAAAAAAAAGhvgP7pAQ==&name=software_updater&allowAnon=true"
-      });
-    }
+    var dashboardRequest = {
+      "name":"dashboards.create",
+      "body":{
+        "item":{
+          "id": newUUID(),
+          "label":"Device Software Management",
+          "last_updated": new Date().toISOString(),
+          "last_updated_by": req.userEmail,
+          "version":"1.0.0",
+          "pages":[
+            {
+              "id": newUUID(),
+              "header":"",
+              "controlLayouts":{
+                "xs":[],
+                "sm":[],
+                "md":[],
+                "lg":[],
+                "xl":[]
+              },
+              "mainLayouts":{
+                "xs":[],
+                "sm":[],
+                "md":[],
+                "lg":[],
+                "xl":[]
+              },
+              "widgets":[],
+              "version":"1.0.0"
+            }
+          ],
+          "description":"Microfrontend for Device Software Management",
+          "microfrontend_id": mfeRequest.body.id,
+          "defaults":{
+            "time_range":{
+              "count":1,
+              "units":86400,
+              "type":"relative"
+            },
+            "refresh_rate":{
+              "count":0,
+              "units":1
+            }
+          }
+        },
+        "groupIds":[
+          "default"
+        ]
+      }
+    };
+    
+    return Promise.all([
+      ClearBladeAsync.Code().execute("createTableItems", dashboardRequest, false),
+      ClearBladeAsync.Code().execute("createTableItems", mfeRequest, false)
+    ]);
   }
 
-  function updateSystemInfoConfig(config) {
-    return SYSINFO_COLL.update(ClearBladeAsync.Query().equalTo("name", "Asset Monitor"), {"configuration": JSON.stringify(config)});
-  }
-
-  //Add portal permissions to editor and administrator roles
   //Add topic (publish) permissions to devices/software/update
   ClearBladeAsync.Roles().read(ClearBladeAsync.Query().equalTo("name", "Administrator").or(ClearBladeAsync.Query().equalTo("name", "Editor")))
   .then(function(data) {
@@ -89,17 +97,8 @@ function dm_fw_setup(req, resp) {
       }));
   })
   .then(function (results) {
-    console.debug("Retrieving configuration from system_info");
-    return getSystemInfoConfig();
-  })
-  .then(function (config) {
-    console.debug("Adding portals to configuration.external_links");
-    addPortalsToConfig(config);
-
-    console.debug("Updating configuration in system_info");
-    console.debug(config);
-
-    return updateSystemInfoConfig(config);
+    console.debug("Creating dashbaord");
+    return createDashboard();
   })
   .then(function () {
     resp.success('Success');
