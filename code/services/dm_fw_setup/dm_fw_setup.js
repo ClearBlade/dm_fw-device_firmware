@@ -6,6 +6,7 @@
 
 function dm_fw_setup(req, resp) {
   const params = req.params;
+  const MFE_URL = 'https://cdn.jsdelivr.net/gh/ClearBlade/dm_fw-device_firmware@v0.0.1/dist/dm_fw_device_firmware.js';
 
   function applyPermissionsToRole(roleId) {
 
@@ -25,7 +26,7 @@ function dm_fw_setup(req, resp) {
       "body":{
         "type":"dashboard",
         "id": newUUID(),
-        "url":"http://localhost:8080/dm_fw_device_firmware.js",
+        "url": MFE_URL,
         "config":null
       }
     }
