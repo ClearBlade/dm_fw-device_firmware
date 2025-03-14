@@ -8,6 +8,8 @@ function dm_fw_teardown(req, resp) {
   const params = req.params;
   const DASHBOARD_COLL = ClearBladeAsync.Collection('dashboards');
 
+  console.debug(req);
+
   function removePermissionsFromRole(roleId) {
     return ClearBladeAsync.Role(roleId).setPermissions([
       {

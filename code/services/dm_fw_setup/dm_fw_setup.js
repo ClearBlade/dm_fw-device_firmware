@@ -8,6 +8,8 @@ function dm_fw_setup(req, resp) {
   const params = req.params;
   const MFE_URL = 'https://cdn.jsdelivr.net/gh/ClearBlade/dm_fw-device_firmware@v0.0.1/dist/dm_fw_device_firmware.js';
 
+  console.debug(req);
+
   function applyPermissionsToRole(roleId) {
 
       //Add topic permissions to devices/software/update
