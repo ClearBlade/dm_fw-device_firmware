@@ -91,18 +91,17 @@ function dm_fw_setup(req, resp) {
   }
 
   //Add topic (publish) permissions to devices/software/update
-  ClearBladeAsync.Roles().read(ClearBladeAsync.Query().equalTo("name", "Administrator").or(ClearBladeAsync.Query().equalTo("name", "Editor")))
-  .then(function(data) {
-    return Promise.all(data
-      .map(function (role) {
-        console.debug("Applying permissions for role " + role.name);
-        return applyPermissionsToRole(role.role_id);
-      }));
-  })
-  .then(function (results) {
-    console.debug("Creating dashbaord");
-    return createDashboard();
-  })
+  // ClearBladeAsync.Roles().read(ClearBladeAsync.Query().equalTo("name", "Administrator").or(ClearBladeAsync.Query().equalTo("name", "Editor")))
+  // .then(function(data) {
+  //   return Promise.all(data
+  //     .map(function (role) {
+  //       console.debug("Applying permissions for role " + role.name);
+  //       return applyPermissionsToRole(role.role_id);
+  //     }));
+  // })
+  // .then(function (results) {
+  console.debug("Creating dashbaord");
+  createDashboard()
   .then(function () {
     resp.success('Success');
   })

@@ -59,18 +59,17 @@ function dm_fw_teardown(req, resp) {
   }
 
   //Remove topic (publish) permissions from devices/software/update
-  ClearBladeAsync.Roles().read(ClearBladeAsync.Query().equalTo("name", "Administrator").or(ClearBladeAsync.Query().equalTo("name", "Editor")))
-  .then(function(data) {
-    return Promise.all(data
-      .map(function (role) {
-        console.debug("Applying permissions for role " + role.name);
-        return removePermissionsFromRole(role.role_id);
-      }));
-  })
-  .then(function () {
-    console.debug("Removing dashboard row");
-    return removeDashboard();
-  })
+  // ClearBladeAsync.Roles().read(ClearBladeAsync.Query().equalTo("name", "Administrator").or(ClearBladeAsync.Query().equalTo("name", "Editor")))
+  // .then(function(data) {
+  //   return Promise.all(data
+  //     .map(function (role) {
+  //       console.debug("Applying permissions for role " + role.name);
+  //       return removePermissionsFromRole(role.role_id);
+  //     }));
+  // })
+  // .then(function () {
+  console.debug("Removing dashboard row");
+  removeDashboard()
   .then(function (results) {
     console.debug(results);
     resp.success('Success');
